@@ -2,7 +2,6 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { listen } from "@tauri-apps/api/event";
 import { useToast } from "vue-toastification";
-import { Tooltip } from "vuetify/directives";
 
 interface EventPayload {
   payload: {

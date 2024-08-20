@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import { invoke } from "@tauri-apps/api/tauri";
 import { listen, emit } from "@tauri-apps/api/event";
 import { useToast } from "vue-toastification";
 
@@ -13,6 +12,7 @@ interface EventPayload {
 
 interface VirtualScrollComponent {
   scrollToIndex: (index: number) => void;
+  $el: any;
 }
 
 const toast = useToast();
@@ -26,29 +26,15 @@ const fullStatements = ref<string[]>([]);
 const currentLogIndex = ref<number>(0);
 
 const fullStatementShown = ref<boolean>(false);
-const currentPos = ref(0);
-const numLogs = ref(0);
 
-const logSize = 2000;
 let virtualScroll = ref<VirtualScrollComponent | null>(null);
 const isAtBottom = () => {
   if (!virtualScroll.value) return false;
   const element = virtualScroll.value.$el;
   let pos = element.scrollTop + (1.5*element.clientHeight);
-  currentPos.value = pos;
-  numLogs.value = element.scrollHeight;
   let isBottom = pos >= element.scrollHeight;
   return isBottom;
 };
-
-async function initWithExistingData() {
-  try {
-    const result: string[] = await invoke("send_existing_data_to_log");
-    condensedStatements.value = result;
-  } catch (error) {
-    toast.error(`${error}`);
-  }
-}
 
 function showFullStatement(index: number) {
   if (index < condensedStatements.value.length -1) {
@@ -77,7 +63,6 @@ function scrollToEnd() {
 
 let unlisten: (() => void) | null = null;
 
-const log = ref("else");
 
 onMounted(async () => {
   //initWithExistingData();
@@ -123,8 +108,6 @@ onUnmounted(() => {
   <dev class="statements-log-container">
     <dev class="label-container" @click="scrollToEnd">
       Log
-      Current Pos: {{ currentPos }}
-      Num Logs: {{ numLogs }}
     </dev>
     <v-virtual-scroll
       class="virtual-scroll"
@@ -138,7 +121,7 @@ onUnmounted(() => {
       </template>
     </v-virtual-scroll>
     <v-dialog v-model="fullStatementShown">
-      <template v-slot:default="{ isActive }">
+      <template v-slot:default>
         <v-card title="Full Statement" color="#2b3a4e">
           <v-card-text>
             <div class="scrollable-container">
