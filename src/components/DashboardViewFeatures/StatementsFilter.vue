@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/tauri";
 import FilterItem from "./FilterItem.vue";
-import { useToast } from "vue-toastification";
 
 const filterItems = ref<Map<number, any>>(new Map()); // Array to hold the added components
-
-const toast = useToast();
 
 function addFilter() {
   let currentFilterSize = filterItems.value.size;

@@ -48,7 +48,6 @@ onMounted(async () => {
     (event: ConnectionResponsePayload) => {
       try {
         let succ_connected: boolean = event.payload.successfull;
-        let response: string = event.payload.response;
         if (succ_connected) {
           connectColor.value = "green";
           connectionLabel.value = "Connected"
