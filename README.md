@@ -7,7 +7,7 @@ LiMoxAPI (**Li**ve **Mo**nitoring **xAPI**) is a tool to monitor environment tha
 ### Setup YetAnalytics (optional)
 It is recommended to use the YetAnalytics LRS that you can findy preconfigured under releases. You need a JavaJDK to the LRS.
 
-1. Download the under releases provided YetAnalytics.zip.
+1. Download YetAnalytics.zip under [releases](https://github.com/Ipagaxi/LiMoxAPI/releases/tag/app-v0.0.0).
 
 2. Unzip YetAnalytics to a location of your choice
 
@@ -23,7 +23,7 @@ It is recommended to use the YetAnalytics LRS that you can findy preconfigured u
 
 ### LiMoxAPI
 
-You find the suitable installer/binary under releases
+You find the suitable installer/binary under [releases](https://github.com/Ipagaxi/LiMoxAPI/releases/tag/app-v0.0.0).
 
 ## Usage
 
