@@ -1,16 +1,82 @@
-# Tauri + Vue 3 + TypeScript
+# LiMoxAPI
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+LiMoxAPI (**Li**ve **Mo**nitoring **xAPI**) is a tool to monitor environment that use xAPI to create Statements with a focus on VR apps. It is not directly monitoring the software that is generating the statements but the connected LRS. The purpose of LiMoxAPI is support developers during development process.
 
-## Recommended IDE Setup
+## Setup
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+### Setup YetAnalytics (optional)
+It is recommended to use the YetAnalytics LRS that you can findy preconfigured under releases. You need a JavaJDK to the LRS.
 
-## Type Support For `.vue` Imports in TS
+1. Download the under releases provided YetAnalytics.zip.
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's Take Over mode by following these steps:
+2. Unzip YetAnalytics to a location of your choice
 
-1. Run `Extensions: Show Built-in Extensions` from VS Code's command palette, look for `TypeScript and JavaScript Language Features`, then right click and select `Disable (Workspace)`. By default, Take Over mode will enable itself if the default TypeScript extension is disabled.
-2. Reload the VS Code window by running `Developer: Reload Window` from the command palette.
+3. To start the YetAnalytics LRS open the root directory of extracted file in the terminal. Now type the following command based on your OS:
+ - Windows: ```.\lrsql.exe```
+ - Linux/MacOS: ```./bin/run_sqlite.sh```
 
-You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
+ If it was successfull it should look like this:
+
+ ![LRSQl connectes](docs/images/lrsql_connected.png)
+
+ For further information visit the YetAnalytics [GitHub Repo](https://github.com/yetanalytics/lrsql)
+
+### LiMoxAPI
+
+You find the suitable installer/binary under releases
+
+## Usage
+
+1. After setting up everything you just have execute the LiMoxAPI executable.
+
+    The starting view is the connection setup.
+
+![Connection View](docs/images/connection_view.png)
+
+2. If you use the preconfigured YetAnalytics than you just have to press **Connect** without changing the credentials. It should successfully connect to the LRS and change the view.
+
+    If you use another LRS you have to change the ip, port, key (username) and secret key (password) accordingly.
+
+### Functionalities
+
+On the Dashboard you can see different components.
+
+![Dashboard View](docs/images/dashboard_view.png)
+
+The Statement Pulse Monitor and the info box to right are straigh forward and give general information over incoming statements.
+
+The Log component logs every incoming statement reduced to its easy to read informations. By clicking on a log the full statement gets displayed.
+
+On the right side is the filter component where you can add filter.
+After adding a filter you can configure that filter by clicking on the gear icon next to it. 
+
+![Filter Options](docs/images/filter_options.png)
+
+Here you can set a label for the filter, filter rules and the sound that notifes you whenever a statement valid to this filter rules comes in.
+Under `Value Path` you determine the path to the specific value in the json statement and under `Value` its value. `Filter Option` determines if every statement must contain the specified value (`In`) or if it exclude every statement with this value (`Out`).
+
+For example: `Filter Option` = `In`, `Value Path` = `actor.name` and `Value` = `Player1` $\\$
+$\Rightarrow$ This filter counts every statement with actors of the name `Player1`.
+
+The filter does not affect the other components.
+
+## Build
+
+1. Install cargo, see [here](https://www.rust-lang.org/tools/install) for options
+
+2. Install bun, see [here](https://bun.sh/docs/installation) for options
+
+3. You may need to install specific dependencies based on your OS, see [here](https://tauri.app/v1/guides/getting-started/prerequisites) for more instructions
+
+4. Open the terminal and install tauri-cli: 
+```cargo install tauri-cli```
+
+5. Download the project source code, unpack it and open it in the terminal
+
+6. Run: ```bun install```
+
+7. Now you can run the project in the runtime via ```cargo tauri dev```
+    
+    Or build the bundles via ```cargo tauri build```. You can find the built artifacts under `./src-tauri/target/release`
+    
+For further information visit the [Tauri Website](https://tauri.app/)
