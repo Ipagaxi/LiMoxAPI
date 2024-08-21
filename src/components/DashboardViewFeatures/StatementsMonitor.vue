@@ -92,11 +92,8 @@ function updateChart(newValue: number) {
 watch(
   () => passedTime.value,  // assuming passedTime is a ref or reactive variable
   (newValue, oldValue) => {
-    emit("log", "New: " + newValue)
-    emit("log", "Old: " + oldValue)
 
     if (Math.abs(oldValue - newValue) > 130) {
-      emit("log", "Change!###########################");
       chartOptions.value = {
         ...chartOptions.value,
         chart: {
@@ -122,7 +119,6 @@ onMounted(async () => {
     (event: EventPayload) => {
       endTime = Date.now();
       passedTime.value = endTime - startTime
-      emit("log", "Time passed: " + passedTime.value);
       startTime = Date.now();
       try {
         updateChart(event.payload.value);
