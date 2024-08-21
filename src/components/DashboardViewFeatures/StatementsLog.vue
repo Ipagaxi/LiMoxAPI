@@ -46,7 +46,6 @@ function showFullStatement(index: number) {
 function scrollToEnd() {
   nextTick(() => {
     let lastIndex = condensedStatements.value.length - 1;
-    emit("log", "Scroll to: " + lastIndex);
     if (virtualScroll.value) {
       try {
         virtualScroll.value.scrollToIndex(lastIndex);
@@ -74,20 +73,14 @@ onMounted(async () => {
         condensedStatements.value.pop();
         condensedStatements.value.push(...newDensedStatements);
         condensedStatements.value.push("---");
-        emit("log", "Log size: " + condensedStatements.value.length)
         if (isAtBottom() && !(virtualScroll.value === null)) {
           await nextTick();
           scrollToEnd();
         } else {
-          emit('log', "Not at bottom");
         }
         let newFullStatements: string[] = event.payload.full_statements;
         
         fullStatements.value.push(...newFullStatements);
-        /*if (condensedStatements.value.length > logSize) {
-          condensedStatements.value = condensedStatements.value.slice(-logSize);
-          fullStatements.value = fullStatements.value.slice(-logSize);
-        }*/
       } catch (error) {
         toast.error(`${error}`);
       }
