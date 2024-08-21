@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-import { listen } from "@tauri-apps/api/event";
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import { listen, emit } from "@tauri-apps/api/event";
 import { useToast } from "vue-toastification";
 
 interface EventPayload {
@@ -8,6 +8,10 @@ interface EventPayload {
     value: number;
   };
 }
+
+let startTime = Date.now();
+let endTime = Date.now();
+const passedTime = ref(300);
 
 const toast = useToast();
 
@@ -54,14 +58,23 @@ const chartOptions = ref({
     labels: {
       style: {
         colors: ['#e6e9fb']
+      },
+      formatter: function (value: number) {
+        return Math.round(value); // round to avoid floating numbers
       }
-    }
+    },
+    min: 0,
+    max: function (max: number) {
+      return max > 3 ? max : 3; // ensure y-axis scales higher but shows at least up to 3
+    },
+    tickAmount: 4,
+    forceNiceScale: true,
   }
 });
 const chartSeries = ref([
   {
     name: "series-1",
-    data: [3, 8, 2, 11],
+    data: [0],
   },
 ]);
 
@@ -76,12 +89,41 @@ function updateChart(newValue: number) {
   }
 }
 
+watch(
+  () => passedTime.value,  // assuming passedTime is a ref or reactive variable
+  (newValue, oldValue) => {
+    emit("log", "New: " + newValue)
+    emit("log", "Old: " + oldValue)
+
+    if (Math.abs(oldValue - newValue) > 130) {
+      emit("log", "Change!###########################");
+      chartOptions.value = {
+        ...chartOptions.value,
+        chart: {
+          ...chartOptions.value.chart,
+          animations: {
+            ...chartOptions.value.chart.animations,
+            dynamicAnimation: {
+              ...chartOptions.value.chart.animations.dynamicAnimation,
+              speed: newValue,
+            }
+          }
+        }
+      };
+    }
+  }
+);
+
 let unlisten: (() => void) | null = null;
 
 onMounted(async () => {
   unlisten = await listen(
     "prog-num-statements",
     (event: EventPayload) => {
+      endTime = Date.now();
+      passedTime.value = endTime - startTime
+      emit("log", "Time passed: " + passedTime.value);
+      startTime = Date.now();
       try {
         updateChart(event.payload.value);
       } catch (error) {

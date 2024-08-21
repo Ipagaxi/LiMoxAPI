@@ -1,9 +1,16 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{Value};
 use core::time;
-use std::{io::Cursor, vec};
+use std::{hash::Hash, io::Cursor, vec};
 use polars::{io::json, prelude::*}; 
 use chrono::{DateTime, Utc};
+use std::collections::HashSet;
+
+#[derive(Hash, Eq, PartialEq, Debug)]
+pub struct Actor {
+    pub name: String,
+    pub mbox: String,
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct FilterRule {
@@ -52,7 +59,7 @@ fn transform_to_dataframe(mut json_data: Value) -> DataFrame {
 }
 
 // The path parameter are the elements in the json tree e.g: [actor, name] will search in an element "actor" for the value of an element "name"
-pub fn get_values_in_jason_tree(json_data: Value, path: &[&str]) -> Series {
+pub fn get_values_in_json_tree(json_data: Value, path: &[&str]) -> Series {
     let df = transform_to_dataframe(json_data);
 
     let mut values = df.column(path[0]).unwrap().clone(); 
@@ -128,10 +135,10 @@ pub fn get_num_statements(json_data: Value) -> usize {
 }
 
 pub fn get_condensed_statements(json_data: Value) -> Vec<String> {
-    let timestamps = datetime_series_to_vec(get_values_in_jason_tree(json_data.clone(), &["timestamp"]));
-    let actor_names = series_to_vec(get_values_in_jason_tree(json_data.clone(), &["actor", "name"]));
-    let verb_names = parse_name(series_to_vec(get_values_in_jason_tree(json_data.clone(), &["verb", "id"])));
-    let object_names =parse_name(series_to_vec(get_values_in_jason_tree(json_data.clone(), &["object", "id"])));
+    let timestamps = datetime_series_to_vec(get_values_in_json_tree(json_data.clone(), &["timestamp"]));
+    let actor_names = series_to_vec(get_values_in_json_tree(json_data.clone(), &["actor", "name"]));
+    let verb_names = parse_name(series_to_vec(get_values_in_json_tree(json_data.clone(), &["verb", "id"])));
+    let object_names =parse_name(series_to_vec(get_values_in_json_tree(json_data.clone(), &["object", "id"])));
 
     let mut condensed_statements: Vec<String> = Vec::new();
 
@@ -201,4 +208,17 @@ pub fn get_filtered_statements_counters(json_data: Value, mut filters: Vec<Filte
         }
     
     filters
+}
+
+pub fn get_actors(json_data: Value, mut actors: HashSet<Actor>) -> HashSet<Actor> {
+
+    if let Some(array) = json_data.as_array() {
+        for item in array {
+            let name = item["actor"]["name"].to_string();
+            let mbox = item["actor"]["mbox"].to_string();
+            let actor = Actor { name, mbox };
+            actors.insert(actor);
+        }
+    }
+    actors
 }

@@ -1,10 +1,14 @@
 use execute::generic_array::arr;
 use tauri::{AppHandle, Event, Manager};
 use core::{num, time};
+use std::collections::HashSet;
+use std::ffi::NulError;
 use std::{usize, vec};
 use chrono::{Duration, FixedOffset};
 use serde_json::{Value};
 use tokio::time::sleep;
+use chrono::prelude::*;
+use chrono_tz::Europe::Berlin;
 
 use rand::Rng;
 
@@ -15,11 +19,8 @@ use crate::{payload::*};
 // Time in milliseconds, has to be the same as the animation speed of the chart
 const UPDATE_PERIODE: usize = 300;
 
-const NUM_STATEMENTS_SIZE: usize = 10;
-static mut NUM_STATEMENTS: Vec<usize> = Vec::new();
 static mut LOG_STATEMENTS: Vec<String> = Vec::new();
 static mut FILTERED_STATEMENTS_COUNTER: Vec<usize> = Vec::new();
-
 static mut FILTERS: Vec<Filter> = Vec::new();
 
 use crate::{IP_ADDRESS, PASSWORD, PORT, USERNAME, UPDATER_STARTED};
@@ -74,13 +75,6 @@ pub fn deregister_filter(filter_id: String) {
     }
 }
 
-// I know this is ugly...
-pub fn init_num_statements() {
-    for _i in 0..NUM_STATEMENTS_SIZE {
-        unsafe { NUM_STATEMENTS.push(0); }
-    }
-}
-
 pub async fn connect_to_lrs(app_handle: AppHandle, event: Event) {
     if let Some(payload) = event.payload() {
         match serde_json::from_str::<ConnectionParamsPayload>(payload) {
@@ -120,14 +114,23 @@ fn send_filtered_statements_counter(app_handle: AppHandle) {
     }
 }
 
+fn get_datetime() -> String {
+    let utc_time = Utc::now();
+
+    let berlin_time = utc_time.with_timezone(&Berlin);
+    let formatted_time = berlin_time.format("%Y-%m-%d %H:%M:%S").to_string();
+
+    // Print the current date and time in Berlin
+    formatted_time
+}
+
 pub async fn update_frontend(app_handle: AppHandle) {
+    let mut actors: HashSet<Actor> = HashSet::new();
     let mut connectionEstablished = true;
     let date_time = chrono::offset::Utc::now();
-    let offset = FixedOffset::east_opt(-2 * 3600).expect("Could not get offset!"); // east_opt returns an Option<FixedOffset>
 
     // Apply the offset to the current UTC time
-    let local_time = date_time.with_timezone(&offset);
-    let mut timestamp = format!("{}", local_time.format("%Y-%m-%dT%H:%M:%SZ"));//"2023-06-20T08:16:47.696000000Z".to_string();
+    let mut timestamp = format!("{}", date_time.format("%Y-%m-%dT%H:%M:%SZ"));//"2023-06-20T08:16:47.696000000Z".to_string();
     loop {
         match request_statements_since(&timestamp).await {
             Ok(response) => {
@@ -148,6 +151,9 @@ pub async fn update_frontend(app_handle: AppHandle) {
                             let _ = app_handle.emit_all("log-statements-event", StatementLogPayload {densed_statements: log_statements, full_statements: prettified_statements });
                             FILTERS = get_filtered_statements_counters(v["statements"].clone(), FILTERS.clone());
                             send_filtered_statements_counter(app_handle.clone());
+                            actors = get_actors(v["statements"].clone(), actors);
+                            let _ = app_handle.emit_all("datetime-event", PayloadString {value: get_datetime()});
+                            let _ = app_handle.emit_all("num-actors-event", PayloadUsize {value: actors.len()});
                         }
                         timestamp = statements[0]["stored"].to_string().replace('"', "");
                     }
