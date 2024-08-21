@@ -161,8 +161,8 @@ fn value_in_statement(data: Value, path: Vec<String>, value: String) -> bool {
 }
 
 fn parse_path(path: String) -> Vec<String> {
-    let normalized_path = path.replace(", ", ",");
-    let string_vec: Vec<String> = normalized_path.split(",").map(|s| s.to_string()).collect();
+    let normalized_path = path.replace(". ", ".");
+    let string_vec: Vec<String> = normalized_path.split(".").map(|s| s.to_string()).collect();
     string_vec
 }
 
