@@ -25,8 +25,6 @@ static mut UPDATER_STARTED: bool = false;
 
 #[tokio::main]
 async fn main() {
-    init_num_statements();
-
     tauri::Builder::default()
         .setup(move |app| {
             let app_handle = app.app_handle();

@@ -22,7 +22,12 @@ pub struct PayloadUsize {
 
 #[derive(Clone, serde::Serialize)]
 pub struct PayloadBool {
-    pub balue: bool
+    pub value: bool
+}
+
+#[derive(Clone, serde::Serialize)]
+pub struct PayloadString {
+    pub value: String
 }
 
 #[derive(Clone, serde::Deserialize, Debug)]
