@@ -97,13 +97,13 @@ onUnmounted(() => {
       ></v-text-field>
       <v-text-field
         v-model="username"
-        label="Username"
+        label="Username/API key"
         bg-color="#2b3a4e"
         class="form-field"
       ></v-text-field>
       <v-text-field
         v-model="password"
-        label="Password"
+        label="Password/Key secret"
         bg-color="#2b3a4e"
         class="form-field"
       ></v-text-field>

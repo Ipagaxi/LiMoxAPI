@@ -15,7 +15,7 @@ interface DateTimePayload {
 }
 
 const numStatements = ref<number>(0);
-const latestStatementDateTime = ref<string>("");
+const latestStatementDateTime = ref<string>("None");
 const numActors = ref<number>(0);
 
 let unlisten: (() => void) | null = null;

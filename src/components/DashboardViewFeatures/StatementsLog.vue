@@ -28,13 +28,27 @@ const currentLogIndex = ref<number>(0);
 const fullStatementShown = ref<boolean>(false);
 
 let virtualScroll = ref<VirtualScrollComponent | null>(null);
-const isAtBottom = () => {
+
+let isAtBottom = true;
+let currentScrollPos = 0;
+
+function updateIsAtBottom() {
   if (!virtualScroll.value) return false;
   const element = virtualScroll.value.$el;
   let pos = element.scrollTop + (1.5*element.clientHeight);
-  let isBottom = pos >= element.scrollHeight;
-  return isBottom;
-};
+  emit("log", "Pos   : " + pos);
+  emit("log", "Height: " + element.scrollHeight);
+  isAtBottom = pos >= element.scrollHeight;
+  if (!isAtBottom) {
+    emit("log", "Not bottom anymore");
+  }
+}
+
+function getNewPos() {
+  if (!virtualScroll.value) return currentScrollPos;
+  const element = virtualScroll.value.$el;
+  return element.scrollTop + element.clientHeight;
+}
 
 function showFullStatement(index: number) {
   if (index < condensedStatements.value.length -1) {
@@ -50,9 +64,9 @@ function scrollToEnd() {
       try {
         virtualScroll.value.scrollToIndex(lastIndex);
         // Additional check to ensure that the scroll reached the end
-        if (!isAtBottom()) {
+        /*if (!isAtBottom) {
           virtualScroll.value.scrollToIndex(lastIndex); // Retry if necessary
-        }
+        }*/
       } catch (error) {
         emit("log", `${error}`);
       }
@@ -61,7 +75,6 @@ function scrollToEnd() {
 }
 
 let unlisten: (() => void) | null = null;
-
 
 onMounted(async () => {
   //initWithExistingData();
@@ -73,8 +86,19 @@ onMounted(async () => {
         condensedStatements.value.pop();
         condensedStatements.value.push(...newDensedStatements);
         condensedStatements.value.push("---");
-        if (isAtBottom() && !(virtualScroll.value === null)) {
-          await nextTick();
+        emit("log", "Bottom: " + isAtBottom);
+        await nextTick();
+        let newScrollPos = getNewPos();
+        if (newScrollPos < currentScrollPos) {
+          isAtBottom = false;
+        } else if (newScrollPos > currentScrollPos) {
+          emit("log", "NPos: " + newScrollPos);
+          emit("log", "OPos: " + currentScrollPos);
+          updateIsAtBottom();
+        } else {
+        }
+        currentScrollPos = newScrollPos;
+        if (isAtBottom && !(virtualScroll.value === null)) {
           scrollToEnd();
         } else {
         }
